@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  db:
+    restart: always
+    image: mysql:5.7
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=reminder
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+    ports:
+      - "3306:3306"
+
+  app:
+    restart: always
+    image: app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+      - redis
+      - migrations
+      - celery_beat
+      - celery_worker
+
+  migrations:
+    build: .
+    image: app
+    command: python manage.py migrate
+    volumes:
+      - .:/code
+    links:
+      - db
+
+  redis:
+    restart: always
+    image: redis:5.0.8
+    expose:
+      - 6379
+
+  celery_worker:
+    command: "celery worker -A reminder --loglevel=info"
+    container_name: celery_worker
+    build: .
+    depends_on:
+      - db
+      - redis
+    hostname: celery_worker
+    restart: always
+
+  celery_beat:
+    command: "celery -A reminder beat"
+    container_name: celery_beat
+    build: .
+    depends_on:
+      - db
+      - redis
+    hostname: celery_beat
+    restart: always
