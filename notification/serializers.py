@@ -32,7 +32,6 @@ class NotificationSerializer(serializers.ModelSerializer):
         """
         Check that start is before finish.
         """
-        import pdb; pdb.set_trace()
         return data
 
     class Meta:
