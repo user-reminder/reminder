@@ -28,12 +28,6 @@ class NotificationSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
     recipients = UserSerializer(many=True)
 
-    def validate(self, data):
-        """
-        Check that start is before finish.
-        """
-        return data
-
     class Meta:
         model = Notification
         fields = '__all__'
